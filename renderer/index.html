@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="dark">
+  <title>Prism AI</title>
+  <link rel="stylesheet" href="vendor/highlight-dark.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Prism">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">P</div>
+        <span class="brand-name">Prism</span>
+      </div>
+
+      <button id="new-chat" class="new-chat-button" type="button">
+        <span aria-hidden="true">＋</span><span data-i18n="newChat">Yeni sohbet</span>
+      </button>
+
+      <div class="history-heading" data-i18n="history">Geçmiş</div>
+      <nav id="history-list" class="history-list" aria-label="Sohbet geçmişi"></nav>
+
+      <div class="sidebar-bottom">
+        <div id="connection-state" class="connection-state is-offline">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="connection-label" data-i18n="ollamaOffline">Ollama çevrimdışı</span>
+        </div>
+        <button id="open-settings" class="settings-button" type="button">
+          <span aria-hidden="true">⚙</span><span data-i18n="settings">Ayarlar</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="model-control">
+          <label for="model-select" data-i18n="model">Model</label>
+          <select id="model-select" aria-label="Model"></select>
+        </div>
+        <div id="profile-badge" class="profile-badge" title="">
+          <span class="profile-dot" aria-hidden="true"></span><span id="profile-label">—</span>
+        </div>
+      </header>
+
+      <div id="download-panel" class="download-panel" hidden>
+        <div class="download-topline">
+          <div class="download-copy">
+            <strong id="download-model"></strong>
+            <span id="download-status"></span>
+          </div>
+          <div class="download-meta">
+            <span id="download-percent">—</span>
+            <span id="download-eta"></span>
+            <button id="cancel-download" class="quiet-button" type="button" data-i18n="cancel">İptal</button>
+          </div>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Model indirme ilerlemesi" aria-valuemin="0" aria-valuemax="100">
+          <div id="download-progress" class="progress-fill"></div>
+        </div>
+        <div id="download-queue" class="download-queue"></div>
+      </div>
+
+      <section id="conversation" class="conversation" aria-live="polite">
+        <div id="welcome" class="welcome-view">
+          <div class="welcome-mark" aria-hidden="true">P</div>
+          <h1 data-i18n="welcomeTitle">Bugün ne üzerinde çalışıyoruz?</h1>
+          <p data-i18n="welcomeBody">Kod, hata ayıklama veya mimari konusunda yardımcı olabilirim.</p>
+        </div>
+        <div id="messages" class="messages" hidden></div>
+      </section>
+
+      <div id="ollama-notice" class="ollama-notice" hidden role="status"></div>
+
+      <div class="composer-wrap">
+        <form id="composer" class="composer">
+          <textarea id="message-input" rows="1" maxlength="50000" data-i18n-placeholder="messagePlaceholder" placeholder="Prism'e bir mesaj yaz..."></textarea>
+          <button id="send-button" class="send-button" type="submit" aria-label="Send">
+            <span id="send-symbol" aria-hidden="true">↑</span>
+          </button>
+        </form>
+        <div class="composer-footnote" data-i18n="privacyNote">Yerel ve özel · Yanıtlar Ollama’da çalışır</div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="settings-dialog" class="settings-dialog">
+    <form method="dialog" class="settings-content">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow" data-i18n="preferences">TERCİHLER</span>
+          <h2 data-i18n="settings">Ayarlar</h2>
+        </div>
+        <button class="icon-button" value="close" aria-label="Close">×</button>
+      </div>
+
+      <section class="setting-section">
+        <label for="language-select" data-i18n="language">Dil</label>
+        <select id="language-select">
+          <option value="tr">Türkçe</option>
+          <option value="en">English</option>
+        </select>
+      </section>
+
+      <section class="setting-section">
+        <h3 data-i18n="backupTitle">Sohbet yedeği</h3>
+        <p data-i18n="backupDescription">Sohbet geçmişini Prism JSON dosyası olarak dışa aktar veya içe al.</p>
+        <div class="backup-actions">
+          <button id="export-history" class="secondary-button" type="button" data-i18n="exportHistory">Geçmişi dışa aktar</button>
+          <button id="import-history" class="secondary-button" type="button" data-i18n="importHistory">Geçmişi içe aktar</button>
+        </div>
+      </section>
+
+      <div class="settings-footer">
+        <span>Prism Local 1.0</span>
+        <span data-i18n="offlineTag">Yerel modeller · Çevrimdışı sohbet</span>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="import-dialog" class="confirm-dialog">
+    <div class="confirm-content">
+      <h2 data-i18n="importPreviewTitle">Sohbetleri içe aktar?</h2>
+      <p id="import-preview"></p>
+      <div class="dialog-actions">
+        <button id="cancel-import" class="secondary-button" type="button" data-i18n="cancel">İptal</button>
+        <button id="confirm-import" class="primary-button" type="button" data-i18n="mergeImport">Birleştir</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="../node_modules/marked/lib/marked.umd.js"></script>
+  <script src="../node_modules/dompurify/dist/purify.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

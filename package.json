@@ -1,0 +1,69 @@
+{
+  "name": "prism-local-ai",
+  "version": "1.0.0",
+  "description": "A minimal desktop client for local Ollama models",
+  "author": "Prism contributors",
+  "desktopName": "Prism AI",
+  "main": "electron/main.cjs",
+  "private": true,
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "start": "cross-env ELECTRON_RUN_AS_NODE= electron .",
+    "pack:linux": "cross-env ELECTRON_RUN_AS_NODE= electron-builder --linux AppImage",
+    "pack:win": "cross-env ELECTRON_RUN_AS_NODE= electron-builder --win nsis",
+    "pack:mac": "cross-env ELECTRON_RUN_AS_NODE= electron-builder --mac dmg"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.16",
+    "marked": "^18.1.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "dev.prism.localai",
+    "productName": "Prism AI",
+    "asar": true,
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "node_modules/dompurify/dist/purify.min.js",
+      "node_modules/dompurify/LICENSE",
+      "node_modules/marked/lib/marked.umd.js",
+      "node_modules/marked/LICENSE",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Prism-AI-${version}-Setup-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools",
+      "artifactName": "Prism-AI-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "syncDesktopName": true,
+      "category": "Development",
+      "artifactName": "Prism-AI-${version}-${arch}.${ext}"
+    }
+  }
+}
